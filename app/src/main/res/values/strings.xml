@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">ZapretDroid</string>
+    <string name="app_name">ZapretDroid Material</string>
     <string name="status_active">Активен</string>
     <string name="status_stopped">Остановлен</string>
     <string name="btn_start">Запустить</string>

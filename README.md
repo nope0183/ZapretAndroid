@@ -1,109 +1,29 @@
-# ZapretDroid
+# ZapretDroid Material
 
-Android-порт [Flowseal/zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube) и [Flowseal/tg-ws-proxy](https://github.com/Flowseal/tg-ws-proxy).  
-Обход DPI-блокировок YouTube, Discord и Telegram на Android. **Root не требуется.**
+Android-приложение на основе Kotlin-порта Flowseal/zapret-discord-youtube. Работает через системный `VpnService` и не требует root. Интерфейс использует динамические цвета Material You; Android TV поддерживается через Leanback-запуск, навигацию D-pad и увеличенные элементы управления.
 
-> ### ФЕЙКИ
->
-> Это единственный официальный репозиторий проекта.  
-> Если вы встретили что-то похожее в других местах — **ФЕЙК**.
+## Возможности
 
-> ### РАЗРЕШЕНИЕ НА VPN
->
-> При первом запуске Android запросит разрешение на создание VPN-соединения. Это стандартный системный запрос — приложение использует Android VpnService API (аналог WinDivert/iptables на Windows/Linux). Само соединение локальное, трафик не уходит на сторонние серверы.
+- 18 встроенных профилей, основанных на стратегиях из `general*.bat`.
+- Запуск и остановка VPN с системным запросом разрешения.
+- Импорт и экспорт JSON-профилей через системный выбор файлов.
+- Проверка профиля: неизвестные стратегии, отсутствующие поля и изменённые значения отклоняются.
+- Переключатели Telegram и автозапуска, журнал работы.
 
-## ⚙️ Использование
+JSON-профиль предназначен для этого Android-приложения: это переносимый набор параметров одной встроенной стратегии, а не исполняемый Windows `.bat` и не произвольный скрипт. Импорт профиля не запускает VPN автоматически. Конфигурации и бинарные файлы Windows нельзя напрямую выполнить на Android.
 
-1. Скачайте APK со [страницы последнего релиза](https://github.com/ezxidze/ZapretDroid/releases/latest)
-2. Разрешите установку из неизвестных источников и установите APK
-3. Откройте приложение → дайте разрешение на VPN
-4. Выберите стратегию из списка (начните с **General**)
-5. Нажмите **Запустить**
-6. Проверьте работу YouTube / Discord. Если не работает — пробуйте другие стратегии (**ALT 1, 2, 3...**)
+## Сборка
 
-## ℹ️ Стратегии
+Нужны JDK 17+ и Android SDK с платформой API 36.
 
-Работоспособность стратегии зависит от провайдера и региона. **Пробуйте разные стратегии, пока не найдёте рабочую.**
+```powershell
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat assembleDebug
+```
 
-| Стратегия | Техника | Для чего |
-|---|---|---|
-| **General** | Fake QUIC, repeats=6 | YouTube, Discord, Google |
-| **ALT 1** | Multisplit seqovl=681 | YouTube, Google |
-| **ALT 2** | Fake + Multisplit seqovl=652 | YouTube, Discord |
-| **ALT 3** | Hostfakesplit + BadSeq | YouTube, Discord |
-| **ALT 4** | Syndata + Multidisorder | Все сервисы |
-| **ALT 5** | BadSeq increment=1000 | YouTube, Discord |
-| **ALT 6** | Fake + Fakedsplit seqovl=664 | YouTube, Discord |
-| **ALT 7** | Multisplit seqovl=568 + TS fooling | YouTube |
-| **ALT 8** | Fake seqovl=679, L7=Discord | Discord media |
-| **ALT 9** | Any-protocol + cutoff=n2 | Игры, Discord |
-| **ALT 10** | Multisplit midsld | YouTube, Google |
-| **ALT 11** | Fake TLS MAX.RU | YouTube, Discord |
-| **ALT 12** | Fake + Multisplit sniext+1 | YouTube, Discord |
-| **Fake TLS AUTO** | Рандомный TLS ClientHello | Против pattern-DPI |
-| **Fake TLS AUTO DupSID** | Дублирование Session ID | Против pattern-DPI |
-| **Simple Fake** | Только fake-пакет | Fallback |
-| **Simple Fake UDP** | Fake для UDP/QUIC | Discord, игры |
-| **Google IP-ID Zero** | Multisplit + IP ID=0 | YouTube/Google |
+APK появится в `app/build/outputs/apk/debug/app-debug.apk`.
+APK из GitHub Actions собирается по тегу `v*` и прикрепляется к GitHub Release; он подписан стандартным debug-ключом, поскольку для публикации собственного release-ключа требуется отдельная подпись.
 
-## ☑️ Распространённые вопросы и проблемы
+## Происхождение и лицензия
 
-### Не работает YouTube
-
-- Убедитесь, что включён Secure DNS в браузере или системных настройках Android
-- Попробуйте все стратегии по порядку — ALT 1, 2, 3...
-- Попробуйте стратегии с пометкой "Fake TLS AUTO"
-
-### Не работает Discord
-
-- Сначала найдите стратегию, на которой работает YouTube, и запустите её
-- Для голосовых звонков и стримов попробуйте **ALT 8** — он оптимизирован под Discord media-серверы
-- Проверьте Discord в браузере на телефоне — если там работает, значит стратегия подходящая
-
-### Не работает Telegram
-
-- Включите переключатель **"Telegram обход"** в приложении
-- Нажмите кнопку **"Подключить"** — Telegram откроется автоматически с уже заполненными настройками прокси
-- Если кнопка не появляется — сначала нажмите **Запустить**
-
-### Обход перестал работать
-
-> Стратегии со временем могут переставать работать из-за обновления DPI на стороне провайдера. Если ни одна стратегия не помогает — создайте [issue](https://github.com/ezxidze/ZapretDroid/issues).
-
-- Попробуйте другие стратегии
-- Перезапустите приложение
-- Проверьте, включён ли Secure DNS
-
-### Не работают игры с включённым обходом
-
-- Попробуйте стратегию **ALT 9** (any-protocol режим, оптимизирован для UDP)
-- Если игра не работает — добавьте её домены в `list-general.txt` в папке assets и пересоберите APK
-
-### Не нашли своей проблемы
-
-- Создайте её [тут](https://github.com/ezxidze/ZapretDroid/issues)
-
-## 🗒️ Добавление своих доменов
-
-Список доменов для обхода находится в `app/src/main/assets/lists/`:
-
-- **`list-general.txt`** — Discord, CDN, Telegram и др.
-- **`list-google.txt`** — YouTube, Google
-- **`list-exclude.txt`** — домены, которые не нужно фильтровать
-
-Поддомены учитываются автоматически.
-
-## ⭐ Поддержка проекта
-
-Поставьте ⭐ этому репозиторию, если приложение вам помогло.
-
-Также поддержите оригинального разработчика zapret [тут](https://github.com/bol-van/zapret?tab=readme-ov-file#поддержать-разработчика).
-
-## ⚖️ Лицензирование
-
-Проект распространяется на условиях лицензии [MIT](LICENSE)
-
-## 🩷 Благодарность
-
-💖 Отдельная благодарность [Flowseal](https://github.com/Flowseal) за стратегии и tg-ws-proxy  
-
+Это не официальный выпуск Flowseal или ZapretDroid. Android-основа и Kotlin-реализация стратегий взяты из [ezxidze/ZapretDroid](https://github.com/ezxidze/ZapretDroid) (MIT); файл лицензии сохранён в [LICENSE](./LICENSE). Логика стратегий опирается на [Flowseal/zapret-discord-youtube](https://github.com/Flowseal/zapret-discord-youtube). Material You / Android TV UI, импорт и проверка профилей добавлены в этой производной сборке.
